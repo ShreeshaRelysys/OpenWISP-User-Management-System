@@ -1,0 +1,235 @@
+<%#
+# This file is part of the OpenWISP User Management System
+#
+# Copyright (C) 2012 OpenWISP.org
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title><%= t :Users_management %></title>
+
+  <%= stylesheet_link_tag 'fluid960/reset' %>
+  <%= stylesheet_link_tag 'fluid960/text' %>
+  <%= stylesheet_link_tag 'fluid960/960' %>
+  <%= stylesheet_link_tag 'fluid960/layout' %>
+  <%= stylesheet_link_tag 'fluid960/nav' %>
+
+  <%= stylesheet_link_tag 'custom' %>
+
+  <%= content_for :after_css_defaults %>
+
+  <%= for_ie :version => '6' do %>
+      <%= stylesheet_link_tag 'fluid960/ie6' %>
+  <% end %>
+
+  <%= for_ie :version => '7' do %>
+      <%= stylesheet_link_tag 'fluid960/ie' %>
+  <% end %>
+
+  <%= for_ie do %>
+      <%= stylesheet_link_tag 'custom-ie' %>
+  <% end %>
+
+  <%= javascript_include_tag :defaults %>
+  <script type="text/javascript">owums.subUri = "<%= CONFIG['root_dir'].gsub('/', '') %>";</script>
+
+  <%= content_for :after_defaults %>
+
+  <%= javascript_include_tag 'fluid16' %>
+
+  <link rel="shortcut icon" href="<%= image_path 'favicon.png' %>"/>
+  <%= csrf_meta_tag %>
+</head>
+<body>
+
+
+<div class="container_12" id="container">
+  <div class="grid_12" id="branding">
+    <h1>
+      <a href="<%= root_path %>">
+        <% @logo = Configuration.get('logo')
+          unless @logo.nil? or @logo == '' %>
+          <%= image_tag(@logo) %>
+        <% else %>
+          OpenWISP User Management System
+        <% end %>
+      </a>
+    </h1>
+    <p id="locale">
+      <% if CONFIG['italian'] %>
+        <%= link_to_locale 'it' %>
+      <% end %>
+      <% if CONFIG['slovenian'] %>
+        <%= link_to_locale 'sl' %>
+      <% end %>
+      <% if CONFIG['furlan'] %>
+        <%= link_to_locale 'fur' %>
+      <% end %>
+      <% if CONFIG['german'] %>
+        <%= link_to_locale 'de' %>
+      <% end %>
+      <% if CONFIG['english'] %>
+        <%= link_to_locale 'en' %>
+      <% end %>
+      <% if CONFIG['spanish'] %>
+        <%= link_to_locale 'es' %>
+      <% end %>
+    </p>
+    <% if authenticated? %>
+    <p id="whoami">
+      <%= t :logged_in_as %> <%= link_to_user_or_operator %>
+    </p>
+    <% end %>
+  </div>
+
+  <div class="grid_12">
+    <ul class="nav main">
+      <% if current_operator %>
+          <li><%= menu_link_to t(:Home), operator_path(current_operator) %></li>
+          <% if current_operator.has_role? 'stats_viewer' %>
+              <li>
+                <%= menu_link_to t(:Show_stats), stats_path %>
+                <ul>
+                  <li><%= menu_link_to t(:Registered_users_daily), [stats_path, 'registered_users_daily'].join('/') %></li>
+                  <li><%= menu_link_to t(:Registered_users), [stats_path, 'registered_users'].join('/') %></li>
+                  <li><%= menu_link_to t(:Logins), [stats_path, 'logins'].join('/') %></li>
+                  <li><%= menu_link_to t(:Traffic), [stats_path, 'traffic'].join('/') %></li>
+                </ul>
+              </li>
+          <% end %>
+          <% if current_operator.has_role? 'users_browser' or
+                  current_operator.has_role? 'users_finder' or
+                  current_operator.has_role? 'users_manager' or current_operator.has_role? 'users_registrant'
+          %>
+              <li>
+                <%= menu_link_to(t(:Users), current_operator.has_role?('users_browser') ? users_browse_path : '#') %>
+                <ul>
+                  <% if current_operator.has_role? 'users_browser' %>
+                      <li><%= menu_link_to t(:Browse_users), users_browse_path %></li>
+                  <% end %>
+                  <% if current_operator.has_role? 'users_finder' %>
+                      <li><%= menu_link_to t(:Search_users), users_search_path %></li>
+                  <% end %>
+                  <% if current_operator.has_role? 'users_manager' or current_operator.has_role? 'users_registrant' %>
+                      <li><%= menu_link_to t(:Add_new_user), new_user_path %></li>
+                  <% end %>
+                </ul>
+              </li>
+          <% end %>
+          <% if current_operator.has_role? 'radius_groups_viewer' or
+                  current_operator.has_role? 'radius_groups_creator' %>
+              <li>
+                <%= menu_link_to t(:Radius_groups), radius_groups_path %>
+                <ul>
+                  <% if current_operator.has_role? 'radius_groups_viewer' %>
+                      <li><%= menu_link_to t(:Browse_radius_groups), radius_groups_path %></li>
+                  <% end %>
+                  <% if current_operator.has_role? 'radius_groups_creator' %>
+                      <li><%= menu_link_to t(:Add_new_radius_group), new_radius_group_path %></li>
+                  <% end %>
+                </ul>
+              </li>
+          <% end %>
+          <% if current_operator.has_role? 'operators_manager' %>
+              <li>
+                <%= menu_link_to t(:Operators), operators_path %>
+                <ul>
+                  <li><%= menu_link_to t(:Browse_operators), operators_path %></li>
+                  <li><%= menu_link_to t(:Add_new_operator), new_operator_path %></li>
+                </ul>
+              </li>
+          <% end %>
+          <li>
+            <%= menu_link_to(t(:System_settings), current_operator.has_role?('configurations_manager') ? configurations_path : '#') %>
+            <ul>
+              <% if current_operator.has_role? 'configurations_manager' %>
+                  <li><%= menu_link_to t(:Configuration_keys), configurations_path %></li>
+              <% end %>
+            </ul>
+          </li>
+          <li class="secondary"><%= menu_link_to t(:Logout), operator_logout_path, :method => :delete %></li>
+      <% else %>
+          <li><%= menu_link_to t(:How_to_use_service), account_instructions_path, :disable_if => on_root? %></li>
+          <% if current_account %>
+              <li><%= menu_link_to t(:Show_account_info), account_path %></li>
+              <li><%= menu_link_to t(:Edit_account), edit_account_path %></li>
+              <li class="secondary"><%= link_to t(:Logout), account_logout_path, :method => :delete %></li>
+          <% else %>
+              <li><%= menu_link_to t(:Login), account_login_path %></li>
+              <li><%= menu_link_to t(:Register).html_safe, account_registration_path %></li>
+              <li><%= menu_link_to t(:Forgot_password), password_reset_path %></li>
+          <% end %>
+      <% end %>
+    </ul>
+  </div>
+  <div class="clear"></div>
+  <div class="grid_12">
+    <% if flash[:notice] %>
+    <div id="notice" class="box">
+      <p><%= flash[:notice] %> <a class="close">&times;&nbsp;<%= t(:Close).downcase %></a></p>
+    </div>
+    <% end %>
+    <% if flash[:error] %>
+    <div id="notice" class="box error">
+      <% if flash[:error].is_a?(Hash) %>
+        <ul>
+          <% flash[:error].each do |key, value| %>
+            <li><%= key %>: <%= value %></li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p><%= flash[:error] %> <a class="close">&times;&nbsp;<%= t(:Close).downcase %></a></p>
+      <% end %>
+    </div>
+    <% end %>
+  </div>
+  <div class="clear"></div>
+
+  <%= yield %>
+
+  <div class="grid_12" id="site_info">
+    <div class="box" style="text-align:center">
+      <p>
+        OpenWISP User Management System - Copyright (C) <%= Date.today.year %> <a href="http://openwisp.org/">OpenWISP.org</a></br>
+        <%= t(:Cookie_law) %>
+        <%= link_to t(:Click_for_cookie), document_path('cookie.pdf'), :target => '_blank' %>.
+        <% if is_mobile_device? %>
+          <p id="go-to-mobile"><%= link_to_toggle_mobile %></p>
+        <% end %>
+      </p>
+    </div>
+  </div>
+  <div class="clear"></div>
+</div>
+<% if CONFIG['piwik_url'] and CONFIG['piwik_site_id'] %>
+  <script type="text/javascript">
+    var _paq = _paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="<%= CONFIG['piwik_url'] %>";
+      _paq.push(['setTrackerUrl', u+'piwik.php']);
+      _paq.push(['setSiteId', <%= CONFIG['piwik_site_id']%>]);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+<% end %>
+</body>
+</html>

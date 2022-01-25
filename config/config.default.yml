@@ -1,0 +1,46 @@
+defaults: &defaults
+  # registration form
+  birth_date: true
+  address: true
+  zip: true
+  city: true
+  state: true
+  # other stuff
+  send_email_notification_to_users: true
+  automatic_captive_portal_login: true
+  mac_address_authentication: false
+  # additional languages
+  english: true
+  italian: true
+  spanish: true
+  german: true
+  slovenian: false
+  furlan: false
+  
+  #ssl_ca_path: '/usr/lib/ssl/certs'
+
+  #piwik_site_id: idsite
+  #piwik_url: //piwiki-url.com
+  
+  # uncomment these if you deploy your app in a sub directory
+  # app root dir and static assets host
+  #root_dir: '/app'
+  #asset_host: 'domain.com/app'
+
+  #sentry_dsn: 'http://public:secret@example.com/project-id'
+  
+  # check called station id
+  check_called_station_id:
+    # filter radius accounting sessions older than between_min
+    between_min: 10
+    # filter radius accounting sessions newer than between_max
+    between_max: 60
+
+production:
+  <<: *defaults
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
